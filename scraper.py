@@ -12,7 +12,7 @@ from shared import *
 from scraper_bounds import BASE_URL_FILE_NAME
 SEEN_FILE_NAME = "seen_urls"
 
-preamble = [x.strip() for x in """We the People of the United States, 
+preamble = [x.strip().lower() for x in """We the People of the United States, 
             in Order to form a more perfect Union, 
             establish Justice, 
             insure domestic Tranquility, 
@@ -61,7 +61,7 @@ for file in files:
     for url,data in page_data.items():
         stripped_url = strip_url(url)
         if (is_valid(url)):
-            match = re.findall(compiled_preamble,data)
+            match = re.findall(compiled_preamble,data.lower())
             if len(match)>0:
                 print(match)        
         #if len(matched_phrases) > 0:

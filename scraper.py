@@ -7,10 +7,10 @@ import collections
 import sys
 import csv
 from os import path
+import os
 from shared import *
 from scraper_bounds import BASE_URL_FILE_NAME
 SEEN_FILE_NAME = "seen_urls"
-QUEUE_FILE_NAME= "url_queue"
 
 preamble = [x.strip() for x in """We the People of the United States, 
             in Order to form a more perfect Union, 
@@ -44,54 +44,20 @@ csv_out = open('cases.csv','a')
 writer = csv.writer(csv_out)
 
 running = True
-def handler(signum, frame):
-    running = False
-    dumpout_struct(SEEN_FILE_NAME,seen)
-    dumpout_struct(QUEUE_FILE_NAME,url_queue)
-    sys.exit()
-
-signal.signal(signal.SIGINT, handler)
-
-seen,reading_seen = readin_struct(SEEN_FILE_NAME,set())
-url_queue,readin_queue = readin_struct(QUEUE_FILE_NAME,collections.deque())
-if not readin_queue:
-    base_urls,readin_base = readin_struct(BASE_URL_FILE_NAME)
-    for url in base_urls:
-        url_queue.append(url)
 
 url_ct = 0
 completed = False
-while (running and len(url_queue) > 0):
-    print(len(url_queue))
-    ctr = 0
-    curr_urls = []
-    while(ctr < 1000 and len(url_queue) > 0):
-        curr = url_queue.popleft()
-        if not seen.__contains__(curr):
-            ctr += 1
-            seen.add(curr)
-            curr_urls.append(curr)
-
-    indices = [url for i,url in enumerate(curr_urls)]
-    rs = [grequests.get(u,timeout=3) for u in curr_urls]
-    grequests.map(rs)
-    for i,r in enumerate(rs):
-        resp = r.response
-        if resp is None or resp.status_code is None or resp.status_code != 200:
-            print(f"REQUEUING {indices[i]}")
-            url_queue.append(indices[i])
-            seen.remove(indices[i])
-            continue
-        resp_url = r.response.url
-        stripped_resp_url = strip_url(resp_url)
-        url_ct += 1
-        data = r.response.text
+files = [i for i in os.listdir("page_data")]
+for file in files:
+    page_data = readin_struct(file,folder="page_data")
+    for (url,data) in page_data.items:
+        stripped_url = strip_url(url)
         matched_phrases = []
-        if (is_valid(resp_url)):
+        if (is_valid(url)):
             for phrase in preamble:
                 if re.search(phrase, data, re.IGNORECASE):
                     matched_phrases.append(phrase)
         
         if len(matched_phrases) > 0:
-            writer.writerow([f"\"{stripped_resp_url}\"",f"\"{matched_phrases}\""])
+            writer.writerow([f"\"{stripped_url}\"",f"\"{matched_phrases}\""])
     csv_out.flush()

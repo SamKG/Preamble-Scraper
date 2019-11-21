@@ -49,7 +49,7 @@ url_ct = 0
 completed = False
 files = [i for i in os.listdir("page_data")]
 for file in files:
-    page_data = readin_struct(file,folder="page_data")
+    page_data = readin_struct(file,folder="page_data")[0]
     for url,data in page_data.items():
         stripped_url = strip_url(url)
         matched_phrases = []

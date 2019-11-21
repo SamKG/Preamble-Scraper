@@ -12,37 +12,6 @@ from scraper_bounds import BASE_URL_FILE_NAME
 SEEN_FILE_NAME = "seen_urls"
 QUEUE_FILE_NAME= "url_queue"
 
-preamble = [x.strip() for x in """We the People of the United States, 
-            in Order to form a more perfect Union, 
-            establish Justice, 
-            insure domestic Tranquility, 
-            provide for the common defence, 
-            promote the general Welfare, 
-            and secure the Blessings of Liberty to ourselves and our Posterity, 
-            do ordain and establish this Constitution for the United States of America,
-            We the People,
-            blessings of liberty,
-            ourselves and our posterity,
-            and their posterity,
-            ordain and establish,
-            preamble of the constitution of the united states,
-            preamble of the constitution,
-            preamble to the constitution,
-            ensure domestic Tranquility,
-            more perfect union""".split(",")]
-
-
-print("Preamble terms:",preamble)
-
-csv_fields = ['url','preamble_matched_terms']
-if not path.exists('cases.csv'):
-    csv_out = open('cases.csv', 'w+')
-    writer = csv.writer(csv_out)
-    writer.writerow(csv_fields)
-
-csv_out = open('cases.csv','a')
-writer = csv.writer(csv_out)
-
 running = True
 def handler(signum, frame):
     running = False
@@ -61,6 +30,9 @@ if not readin_queue:
 
 url_ct = 0
 completed = False
+
+page_data = {}
+dump_ct = 0
 while (running and len(url_queue) > 0):
     print(len(url_queue))
     ctr = 0
@@ -86,12 +58,10 @@ while (running and len(url_queue) > 0):
         stripped_resp_url = strip_url(resp_url)
         url_ct += 1
         data = r.response.text
-        matched_phrases = []
-        if (is_valid(resp_url)):
-            for phrase in preamble:
-                if re.search(phrase, data, re.IGNORECASE):
-                    matched_phrases.append(phrase)
-        
-        if len(matched_phrases) > 0:
-            writer.writerow([f"\"{stripped_resp_url}\"",f"\"{matched_phrases}\""])
-    csv_out.flush()
+        page_data[resp_url] = data
+        if (len(page_data) >= 500):
+            dumpout_struct(f"page_data_{dump_ct}",page_data,"page_data")
+            page_data = {}
+            dump_ct += 1
+            print(f"DUMPOUT {dump_ct}")
+dumpout_struct(f"page_data_{dump_ct}",page_data,"page_data")

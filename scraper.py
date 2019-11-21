@@ -50,6 +50,7 @@ completed = False
 files = [i for i in os.listdir("page_data")]
 for file in files:
     page_data = readin_struct(file,folder="page_data")[0]
+    print(file,len(page_data))
     for url,data in page_data.items():
         stripped_url = strip_url(url)
         matched_phrases = []

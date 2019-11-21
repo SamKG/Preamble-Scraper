@@ -31,7 +31,14 @@ preamble = [x.strip() for x in """We the People of the United States,
             ensure domestic Tranquility,
             more perfect union""".split(",")]
 
-
+compiled_preamble = '\b('
+for i,s in enumerate(preamble):
+    if (i == len(preamble)-1):
+       compiled_preamble += s+')\b' 
+    else:
+        compiled_preamble += s+'|'
+print(compiled_preamble)
+compiled_preamble = re.compile(compiled_preamble)
 print("Preamble terms:",preamble)
 
 csv_fields = ['url','preamble_matched_terms']
@@ -55,10 +62,8 @@ for file in files:
         stripped_url = strip_url(url)
         matched_phrases = []
         if (is_valid(url)):
-            for phrase in preamble:
-                if re.search(phrase, data, re.IGNORECASE):
-                    matched_phrases.append(phrase)
-        
+            match = re.search(compiled_preamble,data,re.IGNORECASE)
+            print(match)        
         if len(matched_phrases) > 0:
             writer.writerow([f"\"{stripped_url}\"",f"\"{matched_phrases}\""])
     csv_out.flush()

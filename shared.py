@@ -20,10 +20,12 @@ def strip_url(url):
 
 PICKLE_EXTENSION = ".pickle"
 def dumpout_struct(name,struct,folder="data"):
+    name = name.replace(PICKLE_EXTENSION,'')
     output_file = open(f'{folder}/{name}{PICKLE_EXTENSION}', 'wb+')
     pickle.dump(struct,output_file)
 
 def readin_struct(name,default=None,folder="data"):
+    name = name.replace(PICKLE_EXTENSION,'')
     if not path.exists(f'{folder}/{name}{PICKLE_EXTENSION}'):
         if default is None:
             raise Exception(f"File {name} does not exist, and no default provided!")

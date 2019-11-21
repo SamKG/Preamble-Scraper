@@ -10,6 +10,10 @@ from os import path
 import os
 from shared import *
 from scraper_bounds import BASE_URL_FILE_NAME
+
+import ahocorasick
+A = ahocorasick.Automaton(ahocorasick.STORE_INTS)
+
 SEEN_FILE_NAME = "seen_urls"
 
 preamble = [x.strip().lower() for x in """We the People of the United States, 
@@ -30,7 +34,9 @@ preamble = [x.strip().lower() for x in """We the People of the United States,
             preamble to the constitution,
             ensure domestic Tranquility,
             more perfect union""".split(",")]
-
+for s in preamble:
+    A.add_word(s)
+A.make_automaton()
 compiled_preamble = '('
 for i,s in enumerate(preamble):
     if (i == len(preamble)-1):
@@ -60,10 +66,12 @@ for file in files:
     print(file,len(page_data))
     for url,data in page_data.items():
         stripped_url = strip_url(url)
+        matched_phrases = []
         if (is_valid(url)):
-            match = re.findall(compiled_preamble,data.lower())
-            if len(match)>0:
-                print(match)        
-        #if len(matched_phrases) > 0:
+            for end_index, (insert_order, original_value) in A.iter(data):
+                matched_phrases += original_value
+        
+        if len(matched_phrases) > 0:
+            print(matched_phrases)
         #    writer.writerow([f"\"{stripped_url}\"",f"\"{matched_phrases}\""])
     csv_out.flush()

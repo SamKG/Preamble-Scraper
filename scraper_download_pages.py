@@ -37,7 +37,7 @@ while (running and len(url_queue) > 0):
     print(len(url_queue))
     ctr = 0
     curr_urls = []
-    while(ctr < 1000 and len(url_queue) > 0):
+    while(ctr < 100 and len(url_queue) > 0):
         curr = url_queue.popleft()
         if not seen.__contains__(curr):
             ctr += 1

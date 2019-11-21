@@ -12,7 +12,7 @@ from shared import *
 from scraper_bounds import BASE_URL_FILE_NAME
 
 import ahocorasick
-A = ahocorasick.Automaton(ahocorasick.STORE_INTS)
+A = ahocorasick.Automaton()
 
 SEEN_FILE_NAME = "seen_urls"
 
@@ -35,7 +35,7 @@ preamble = [x.strip().lower() for x in """We the People of the United States,
             ensure domestic Tranquility,
             more perfect union""".split(",")]
 for s in preamble:
-    A.add_word(s)
+    A.add_word(s,s)
 A.make_automaton()
 compiled_preamble = '('
 for i,s in enumerate(preamble):
@@ -68,10 +68,10 @@ for file in files:
         stripped_url = strip_url(url)
         matched_phrases = []
         if (is_valid(url)):
-            for end_index, (insert_order, original_value) in A.iter(data):
-                matched_phrases += original_value
-        
+            for insert_order, original_value in A.iter(data.lower()):
+                matched_phrases.append(original_value)
+        matched_phrases = list(set(matched_phrases)) 
         if len(matched_phrases) > 0:
             print(matched_phrases)
-        #    writer.writerow([f"\"{stripped_url}\"",f"\"{matched_phrases}\""])
+            writer.writerow([f"\"{stripped_url}\"",f"\"{matched_phrases}\""])
     csv_out.flush()
